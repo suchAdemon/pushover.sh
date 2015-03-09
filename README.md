@@ -37,6 +37,8 @@ To use this script, you must have TOKEN and USER (or GROUP) keys from [PushOver]
 
 Added var to pushover.conf named DEVCONF. This will contain the path to your pushover_allDevices.conf file.
 
+Multyline useage: To send multyline message you have to inserte \n as multyline tag.
+
 Additional pushover config files:
 	pushover_allDevices.conf > contains a list of all your devices. format> "AliasForDeivce>PushoverDeviceName" e.g MyPhone>nexus6
 	pushover_API/Script/etcName.conf > place your name application script or what ever between the _ and the . and change your token ID. This will allow you to use diffren tokens by using -A
