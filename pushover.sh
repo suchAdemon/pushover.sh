@@ -115,11 +115,27 @@ curlproxyconf() {
 		proxyset="true"
 	fi
 }
-exectuePushOver() {
-	curlproxyconf
-	validate_user_token "TOKEN" "${TOKEN}" "-T" || exit $?
-	validate_user_token "USER" "${USER}" "-U" || exit $?
-	
+multycurl(){
+	curl_cmd="\"${CURL}\" -s -S \
+		${CURL_OPTS} ${PROXCONF} \
+	    -F \"token=${TOKEN}\" \
+	    -F \"user=${USER}\" \
+	    -F \"message=$(echo -e $message)\" \
+	    $(opt_field callback "${callback}") \
+	    $(opt_field device "${devMapper}") \
+	    $(opt_field timestamp "${timestamp}") \
+	    $(opt_field priority "${priority}") \
+	    $(opt_field retry "${retry}") \
+	    $(opt_field expire "${expire}") \
+	    $(opt_field title "${title}") \
+	    $(opt_field sound "${sound}") \
+	    $(opt_field url "${url}") \
+	    $(opt_field url_title "${url_title}") \
+	    \"${PUSHOVER_URL}\" 2>&1 >/dev/null"
+
+	echo "$curl_cmd"
+}
+singlecurl(){
 	curl_cmd="\"${CURL}\" -s -S \
 		${CURL_OPTS} ${PROXCONF} \
 	    -F \"token=${TOKEN}\" \
@@ -137,11 +153,27 @@ exectuePushOver() {
 	    $(opt_field url_title "${url_title}") \
 	    \"${PUSHOVER_URL}\" 2>&1 >/dev/null"
 
+	echo "$curl_cmd"
+}
+exectuePushOver() {
+	curlproxyconf
+	validate_user_token "TOKEN" "${TOKEN}" "-T" || exit $?
+	validate_user_token "USER" "${USER}" "-U" || exit $?
+
+	curl_cmd=""
+	
+	if [[ "$message" == *"\n"* ]]
+	then
+		curl_cmd=$( multycurl )
+	else
+		curl_cmd=$( singlecurl )
+	fi
+
 	# execute and return exit code from curl command
 	eval "${curl_cmd}"
 	r=$?
 
-	if [ "0" == "$r" -a "false" == "$moreDev" ]
+	if [ "0" != "$r" -a "false" == "$moreDev" ]
 	then
 		echo "$0: Failed to send message" >&2
 		exit 0
